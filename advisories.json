@@ -1,0 +1,38 @@
+{
+  "Potato___Early_blight": {
+    "name_en": "Early Blight",
+    "symptoms_en": [
+      "Dark spots with concentric rings on older leaves",
+      "Yellowing and drying of lower leaves"
+    ],
+    "advisory_en": [
+      "Remove and destroy infected leaves",
+      "Maintain proper spacing and avoid overhead irrigation",
+      "Use recommended fungicide as per local extension advice"
+    ]
+  },
+  "Potato___Late_blight": {
+    "name_en": "Late Blight",
+    "symptoms_en": [
+      "Water-soaked lesions on leaves",
+      "White fungal growth on leaf underside in humid conditions"
+    ],
+    "advisory_en": [
+      "Apply fungicide immediately if risk is high",
+      "Avoid working in wet fields to reduce spread",
+      "Use resistant varieties in next season if available"
+    ]
+  },
+  "Potato___healthy": {
+    "name_en": "Healthy",
+    "symptoms_en": [
+      "No visible disease symptoms",
+      "Normal leaf colour and growth"
+    ],
+    "advisory_en": [
+      "Continue regular field scouting",
+      "Follow good cultural practices",
+      "Monitor weather for disease risk"
+    ]
+  }
+}
