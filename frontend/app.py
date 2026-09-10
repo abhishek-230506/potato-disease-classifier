@@ -4,9 +4,11 @@ import requests
 from PIL import Image
 import io
 
+
 # Read backend URL from environment variable, falling back to localhost:8000 when running locally
 raw_backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
 BACKEND_URL = raw_backend_url.strip().rstrip("/")
+
 
 PING_URL = f"{BACKEND_URL}/ping"
 PREDICT_URL = f"{BACKEND_URL}/predict"
@@ -19,6 +21,7 @@ st.set_page_config(
     layout="centered"
 )
 
+
 # App Title & Description
 st.title("🥔 Potato Leaf Disease Classifier")
 st.markdown(
@@ -28,12 +31,14 @@ st.markdown(
     """
 )
 
+
 # Friendly label mapping for display
 CLASS_DISPLAY_NAMES = {
     "Potato___Early_blight": "Early Blight",
     "Potato___Late_blight": "Late Blight",
     "Potato___healthy": "Healthy"
 }
+
 
 # Sidebar Info
 with st.sidebar:
@@ -60,16 +65,19 @@ with st.sidebar:
     except Exception:
         backend_status_placeholder.error("Backend: Not reachable")
 
+
 # File Uploader
 uploaded_file = st.file_uploader(
     "Choose a potato leaf image...",
     type=["jpg", "jpeg", "png"]
 )
 
+
 if uploaded_file is not None:
     try:
         image = Image.open(uploaded_file)
         st.image(image, caption="Uploaded Potato Leaf", use_container_width=True)
+
 
         # Trigger prediction
         if st.button("Classify Leaf", type="primary"):
@@ -80,15 +88,22 @@ if uploaded_file is not None:
                     mime_type = uploaded_file.type or "image/jpeg"
                     files = {"file": (uploaded_file.name, file_bytes, mime_type)}
 
+
                     response = requests.post(PREDICT_URL, files=files, timeout=15)
+
 
                     if response.status_code == 200:
                         data = response.json()
                         pred_class = data.get("class", "Unknown")
                         confidence = data.get("confidence", 0.0)
+                        name = data.get("name", CLASS_DISPLAY_NAMES.get(pred_class, pred_class))
+                        symptoms = data.get("symptoms", [])
+                        advisory = data.get("advisory", [])
                         all_preds = data.get("all_predictions", {})
 
-                        display_name = CLASS_DISPLAY_NAMES.get(pred_class, pred_class)
+
+                        display_name = name if name else CLASS_DISPLAY_NAMES.get(pred_class, pred_class)
+
 
                         st.subheader("Classification Result")
                         if pred_class == "Potato___healthy":
@@ -96,14 +111,29 @@ if uploaded_file is not None:
                         else:
                             st.warning(f"### Result: **{display_name}** ({confidence}%)")
 
+
+                        if symptoms:
+                            st.markdown("#### Symptoms")
+                            for s in symptoms:
+                                st.write(f"- {s}")
+
+
+                        if advisory:
+                            st.markdown("#### Advisory")
+                            for a in advisory:
+                                st.write(f"- {a}")
+
+
                         st.markdown("#### Confidence Breakdown")
                         for cls_key, prob in all_preds.items():
                             c_name = CLASS_DISPLAY_NAMES.get(cls_key, cls_key)
                             st.write(f"**{c_name}**: {prob}%")
                             st.progress(min(max(prob / 100.0, 0.0), 1.0))
 
+
                     else:
                         st.error(f"Error from API ({response.status_code}): {response.text}")
+
 
                 except requests.exceptions.ConnectionError:
                     st.error(
@@ -112,6 +142,7 @@ if uploaded_file is not None:
                     )
                 except Exception as ex:
                     st.error(f"An unexpected error occurred: {ex}")
+
 
     except Exception as e:
         st.error(f"Invalid image file: {e}")
