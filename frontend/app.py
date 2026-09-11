@@ -76,9 +76,16 @@ st.markdown(
         background-color: rgba(0, 0, 0, 0.55) !important;
     }}
 
-    /* Hide top-right menu / GitHub button */
-    header {visibility: hidden;}
-    .stApp [data-testid="stToolbar"] {visibility: hidden;}
+    /* Hide top bar and GitHub button completely */
+    header {{
+        display: none !important;
+    }}
+    .stApp [data-testid="stToolbar"] {{
+        display: none !important;
+    }}
+    .stApp [data-testid="stTopBar"] {{
+        display: none !important;
+    }}
     </style>
     """,
     unsafe_allow_html=True
