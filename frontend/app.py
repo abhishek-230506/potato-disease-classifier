@@ -16,9 +16,11 @@ bg_base64 = base64.b64encode(bg_bytes).decode()
 bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
 
 # Custom CSS for full-page background
+# Custom CSS for full-page background
 st.markdown(
     f"""
     <style>
+    /* Full-page background */
     .stApp {{
         background-image: {bg_data_url};
         background-size: cover;
@@ -26,37 +28,114 @@ st.markdown(
         background-attachment: fixed;
         background-repeat: no-repeat;
         min-height: 100vh;
-        color: #1b1b1b;
     }}
-    /* Slight overlay to improve text readability */
-    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
-        color: #0f2b1d;
-    }}
-    .stApp p, .stApp label, .stApp .stMarkdown, .stApp .stTooltipIcon, .stApp .st-ae, .stApp .st-af {{
-        color: #111111;
-    }}
-    .stApp a {{
-        color: #006633;
-    }}
-    /* Slight dark overlay so text is readable */
+
+    /* Dark overlay */
     .stApp::before {{
         content: "";
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.35);
         background: rgba(0, 0, 0, 0.25);
         z-index: -1;
     }}
-    /* Make main cards a bit transparent */
-    /* Cards slightly transparent white */
-    .stCard, .st-ae, .st-af {{
-        background-color: rgba(255, 255, 255, 0.85) !important;
+
+    /* Only the main title is dark */
+    .stApp h1 {{
+        color: #0f2b1d !important;
+    }}
+
+    /* Description box */
+    .desc-box {{
+        display: inline-block;
+        max-width: 100%;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.75);
+        color: #0f2b1d !important;
+        font-size: 16px;
+        line-height: 1.5;
+    }}
+
+    .desc-box strong,
+    .desc-box b {{
+        color: #0f2b1d !important;
+    }}
+
+    /* All normal app text is white */
+    .stApp p,
+    .stApp label,
+    .stApp .stMarkdown,
+    .stApp .stMarkdown p,
+    .stApp [data-testid="stFileUploader"] label,
+    .stApp [data-testid="stFileUploader"] span,
+    .stApp [data-testid="stFileUploader"] small,
+    .stApp [data-testid="stFileUploaderDropzoneInstructions"],
+    .stApp [data-testid="stFileUploaderDropzoneInstructions"] span,
+    .stApp [data-testid="stFileUploaderDropzoneInstructions"] small {{
+        color: #ffffff !important;
+    }}
+
+    /* Keep the description text dark despite the general white rule */
+    .stApp .desc-box,
+    .stApp .desc-box p {{
+        color: #0f2b1d !important;
+    }}
+
+    /* File uploader white text and translucent box */
+    .stApp [data-testid="stFileUploader"] {{
+        color: #ffffff !important;
+        background: rgba(0, 0, 0, 0.35);
+        padding: 12px;
+        border-radius: 12px;
+    }}
+
+    .stApp [data-testid="stFileUploaderDropzone"] {{
+        background: rgba(255, 255, 255, 0.18) !important;
+        border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    }}
+
+    /* Browse button */
+    .stApp [data-testid="stFileUploader"] button {{
+        color: #ffffff !important;
+        background: rgba(0, 0, 0, 0.55) !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    }}
+
+    /* Buttons and links */
+    .stApp button,
+    .stApp a {{
+        color: #ffffff !important;
+    }}
+
+    /* Result headings stay white */
+    .stApp h2,
+    .stApp h3,
+    .stApp h4,
+    .stApp h5,
+    .stApp h6 {{
+        color: #ffffff !important;
+    }}
+
+    /* Translucent result containers */
+    .stApp [data-testid="stAlert"],
+    .stApp [data-testid="stStatusWidget"],
+    .stApp [data-testid="stExpander"] {{
+        background: rgba(0, 0, 0, 0.45) !important;
+    }}
+
+    /* Hide Streamlit top bar and footer */
+    header,
+    footer,
+    .stApp [data-testid="stToolbar"],
+    .stApp [data-testid="stTopBar"],
+    .stApp [data-testid="stFooter"] {{
+        display: none !important;
     }}
     </style>
     """,
     unsafe_allow_html=True
 )
-
 # Read backend URL from environment variable, falling back to localhost:8000 when running locally
 raw_backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
 BACKEND_URL = raw_backend_url.strip().rstrip("/")
