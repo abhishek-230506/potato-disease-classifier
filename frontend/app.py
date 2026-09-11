@@ -26,18 +26,39 @@ st.markdown(
         background-attachment: fixed;
         background-repeat: no-repeat;
         min-height: 100vh;
-        color: #1b1b1b;
+        color: #ffffff;
     }}
-    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
-        color: #0f2b1d;
+
+    /* Dark text only for main heading, subtext, and uploader label */
+    .stApp h1 {{
+        color: #0b2f1a !important;
     }}
-    .stApp p, .stApp label, .stApp .stMarkdown, .stApp .stTooltipIcon, .stApp .st-ae, .stApp .st-af {{
-        color: #111111;
+    .stApp .stMarkdown p {{
+        color: #0b2f1a !important;
     }}
+    .stApp label {{
+        color: #0b2f1a !important;
+    }}
+
+    /* Keep everything else white */
+    .stApp p,
+    .stApp .stMarkdown,
+    .stApp .stTooltipIcon,
+    .stApp .st-ae,
+    .stApp .st-af,
+    .stApp .stButton,
+    .stApp .stSelectbox,
+    .stApp .stNumberInput,
+    .stApp .stTextInput,
+    .stApp .stFileUploader {{
+        color: #ffffff !important;
+    }}
+
     .stApp a {{
-        color: #006633;
+        color: #ffffff !important;
     }}
-    /* Slight dark overlay so text is readable */
+
+    /* Slight overlay so text is readable */
     .stApp::before {{
         content: "";
         position: fixed;
@@ -45,9 +66,10 @@ st.markdown(
         background: rgba(0, 0, 0, 0.25);
         z-index: -1;
     }}
-    /* Cards slightly transparent white */
+
+    /* Cards slightly transparent dark so white text stands out */
     .stCard, .st-ae, .st-af {{
-        background-color: rgba(255, 255, 255, 0.85) !important;
+        background-color: rgba(0, 0, 0, 0.55) !important;
     }}
     </style>
     """,
