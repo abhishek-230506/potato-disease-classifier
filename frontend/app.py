@@ -1,4 +1,5 @@
 import os
+import html
 import base64
 import textwrap
 import streamlit as st
@@ -9,26 +10,37 @@ from PIL import Image
 # This must be the first Streamlit command
 st.set_page_config(
     page_title="Potato Disease Classification",
-    page_icon=None,
+    page_icon="🥔",
     layout="centered",
     initial_sidebar_state="expanded"
 )
 
 
-# Background image path: potato/farmer3.avif
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BG_IMAGE_PATH = os.path.join(BASE_DIR, "farmer3.avif")
+# ---------------------------------------------------------------------------
+# Background image
+# ---------------------------------------------------------------------------
+# FIX: the original code assumed a fixed folder depth
+# (dirname(dirname(__file__))). If the script ever lives one level shallower
+# or deeper than expected, the image silently fails to load with no warning.
+# We now try a few sensible candidate locations and use the first one that
+# actually exists.
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_CANDIDATE_BG_PATHS = [
+    os.path.join(_SCRIPT_DIR, "farmer3.avif"),
+    os.path.join(os.path.dirname(_SCRIPT_DIR), "farmer3.avif"),
+    os.path.join(os.path.dirname(os.path.dirname(_SCRIPT_DIR)), "farmer3.avif"),
+]
 
-
-# Load background image (gracefully handle a missing file instead of crashing)
 bg_data_url = None
-try:
-    with open(BG_IMAGE_PATH, "rb") as f:
-        bg_bytes = f.read()
-    bg_base64 = base64.b64encode(bg_bytes).decode()
-    bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
-except (FileNotFoundError, OSError):
-    bg_data_url = None
+for _path in _CANDIDATE_BG_PATHS:
+    try:
+        with open(_path, "rb") as f:
+            bg_bytes = f.read()
+        bg_base64 = base64.b64encode(bg_bytes).decode()
+        bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
+        break
+    except (FileNotFoundError, OSError):
+        continue
 
 
 # Friendly label mapping
@@ -86,6 +98,39 @@ BACKEND_URL = raw_backend_url.strip().rstrip("/")
 
 PING_URL = f"{BACKEND_URL}/ping"
 PREDICT_URL = f"{BACKEND_URL}/predict"
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+def to_percent(value):
+    """
+    FIX: the original template assumed `confidence` / values inside
+    `all_predictions` were always already on a 0-100 scale. Many models
+    return probabilities on a 0-1 scale instead, which used to render as
+    e.g. "0.95%" and draw an invisible confidence bar. This normalizes
+    either convention to a clean 0-100 percentage, and never crashes on
+    bad/missing data.
+    """
+    try:
+        val = float(value)
+    except (TypeError, ValueError):
+        return 0.0
+    if 0 <= val <= 1:
+        val *= 100
+    return max(0.0, min(val, 100.0))
+
+
+def esc(value):
+    """
+    FIX: the original code interpolated backend-supplied strings (class
+    name, symptoms, advisory text) directly into an HTML block rendered
+    with unsafe_allow_html=True. If the backend ever returns text
+    containing '<', '>' or '&' (e.g. an error message, or unexpected
+    model output) it would break the layout or inject stray markup.
+    Escaping keeps this safe no matter what the backend sends.
+    """
+    return html.escape(str(value))
 
 
 # Sidebar (built once)
@@ -190,10 +235,14 @@ st.markdown(
         color: #111111 !important;
     }}
 
-    .stApp,
-    .stApp p,
-    .stApp label,
-    .stApp .stMarkdown {{
+    /* Main content area text (over the background image) stays dark,
+       since it always sits on a light translucent card regardless of
+       the active Streamlit theme. This is intentionally scoped to
+       .main so it can no longer bleed into the sidebar (see below). */
+    .stApp .main,
+    .stApp .main p,
+    .stApp .main label,
+    .stApp .main .stMarkdown {{
         color: #111111 !important;
     }}
 
@@ -242,6 +291,16 @@ st.markdown(
         color: #111111 !important;
     }}
 
+    .result-info-box h3 {{
+        margin-top: 20px;
+        margin-bottom: 8px;
+    }}
+
+    .result-info-box h2 {{
+        margin-top: 0;
+        margin-bottom: 12px;
+    }}
+
     .result-info-box ul {{
         margin-top: 4px;
         padding-left: 24px;
@@ -258,8 +317,16 @@ st.markdown(
         border-left: 5px solid #2e7d32;
     }}
 
+    .confidence-section {{
+        margin-top: 18px;
+    }}
+
     .confidence-row {{
-        margin-top: 10px;
+        margin-top: 12px;
+    }}
+
+    .confidence-row:first-of-type {{
+        margin-top: 8px;
     }}
 
     .confidence-label {{
@@ -284,15 +351,15 @@ st.markdown(
         border-radius: 5px;
     }}
 
-    .stApp h2,
-    .stApp h3,
-    .stApp h4,
-    .stApp h5,
-    .stApp h6 {{
+    .stApp .main h2,
+    .stApp .main h3,
+    .stApp .main h4,
+    .stApp .main h5,
+    .stApp .main h6 {{
         color: #111111 !important;
     }}
 
-    .stApp button {{
+    .stApp .main button {{
         color: #111111 !important;
     }}
 
@@ -302,22 +369,40 @@ st.markdown(
         display: none !important;
     }}
 
-    /* Sidebar text: force white only in dark mode, only inside the sidebar */
-    @media (prefers-color-scheme: dark) {{
-        [data-testid="stSidebar"],
-        [data-testid="stSidebar"] p,
-        [data-testid="stSidebar"] label,
-        [data-testid="stSidebar"] span,
-        [data-testid="stSidebar"] li,
-        [data-testid="stSidebar"] .stMarkdown,
-        [data-testid="stSidebar"] h1,
-        [data-testid="stSidebar"] h2,
-        [data-testid="stSidebar"] h3,
-        [data-testid="stSidebar"] h4,
-        [data-testid="stSidebar"] h5,
-        [data-testid="stSidebar"] h6 {{
-            color: #ffffff !important;
-        }}
+    /* --------------------------------------------------------------
+       Sidebar text color: follow the active Streamlit theme.
+       FIX: previously the sidebar rules had the SAME CSS specificity
+       as the blanket ".stApp p / .stApp label / .stApp .stMarkdown"
+       rule above (which forced everything, including the sidebar,
+       to a hardcoded dark color). Whichever rule happened to be
+       declared last in the stylesheet silently won, so this was one
+       accidental reorder away from breaking again, and elements like
+       <span>/<li>/<h1-h6> in the sidebar were never covered at all.
+
+       Two changes fix this for good:
+       1. The blanket dark-text rule above is now scoped to `.main`
+          only, so it can never touch the sidebar again.
+       2. The sidebar rule below is prefixed with `.stApp` and lists
+          every relevant tag explicitly, giving it strictly higher
+          specificity than any other rule in this file - so it always
+          wins regardless of source order, and correctly tracks
+          Streamlit's `--text-color` theme variable: white text in
+          dark mode, dark text in light mode. --------------------- */
+    .stApp [data-testid="stSidebar"],
+    .stApp [data-testid="stSidebar"] p,
+    .stApp [data-testid="stSidebar"] span,
+    .stApp [data-testid="stSidebar"] li,
+    .stApp [data-testid="stSidebar"] label,
+    .stApp [data-testid="stSidebar"] strong,
+    .stApp [data-testid="stSidebar"] .stMarkdown,
+    .stApp [data-testid="stSidebar"] [data-baseweb="select"] *,
+    .stApp [data-testid="stSidebar"] h1,
+    .stApp [data-testid="stSidebar"] h2,
+    .stApp [data-testid="stSidebar"] h3,
+    .stApp [data-testid="stSidebar"] h4,
+    .stApp [data-testid="stSidebar"] h5,
+    .stApp [data-testid="stSidebar"] h6 {{
+        color: var(--text-color) !important;
     }}
     </style>
     """,
@@ -381,104 +466,115 @@ if uploaded_file is not None:
                     )
 
                     if response.status_code == 200:
-                        data = response.json()
-
-                        pred_class = data.get("class", "Unknown")
-                        confidence = data.get("confidence", 0.0)
-                        name = data.get(
-                            "name",
-                            CLASS_DISPLAY_NAMES.get(
-                                pred_class,
-                                pred_class
+                        # FIX: a non-JSON 200 response (e.g. a proxy
+                        # returning an HTML page) used to raise an
+                        # unguarded exception with a confusing message.
+                        try:
+                            data = response.json()
+                        except ValueError:
+                            st.error(
+                                "The backend returned a response that "
+                                "wasn't valid JSON. Please check the "
+                                "/predict endpoint."
                             )
-                        )
-                        symptoms = data.get("symptoms", [])
-                        advisory = data.get("advisory", [])
-                        all_preds = data.get("all_predictions", {})
+                            data = None
 
-                        display_name = (
-                            name
-                            if name
-                            else CLASS_DISPLAY_NAMES.get(
-                                pred_class,
-                                pred_class
-                            )
-                        )
-
-                        # Build symptoms HTML
-                        symptoms_html = ""
-
-                        if symptoms:
-                            symptoms_items = "".join(
-                                f"<li>{s}</li>" for s in symptoms
-                            )
-                            symptoms_html = textwrap.dedent(f"""\
-                                <h3>{texts["symptoms"]}</h3>
-                                <ul>{symptoms_items}</ul>
-                            """)
-
-                        # Build advisory HTML
-                        advisory_html = ""
-
-                        if advisory:
-                            advisory_items = "".join(
-                                f"<li>{a}</li>" for a in advisory
-                            )
-                            advisory_html = textwrap.dedent(f"""\
-                                <h3>{texts["advisory"]}</h3>
-                                <ul>{advisory_items}</ul>
-                            """)
-
-                        # Build confidence HTML
-                        confidence_html = ""
-
-                        if all_preds:
-                            confidence_rows = ""
-
-                            for cls_key, prob in all_preds.items():
-                                class_name = CLASS_DISPLAY_NAMES.get(
-                                    cls_key,
-                                    cls_key
+                        if data is not None:
+                            pred_class = data.get("class", "Unknown")
+                            confidence = to_percent(data.get("confidence", 0.0))
+                            name = data.get(
+                                "name",
+                                CLASS_DISPLAY_NAMES.get(
+                                    pred_class,
+                                    pred_class
                                 )
+                            )
+                            symptoms = data.get("symptoms", [])
+                            advisory = data.get("advisory", [])
+                            all_preds = data.get("all_predictions", {})
 
-                                try:
-                                    prob_val = float(prob)
-                                except (TypeError, ValueError):
-                                    prob_val = 0.0
+                            display_name = (
+                                name
+                                if name
+                                else CLASS_DISPLAY_NAMES.get(
+                                    pred_class,
+                                    pred_class
+                                )
+                            )
 
-                                bar_width = min(max(prob_val, 0), 100)
-                                confidence_rows += textwrap.dedent(f"""\
-                                    <div class="confidence-row">
-                                    <div class="confidence-label"><span>{class_name}</span><span>{prob}%</span></div>
-                                    <div class="confidence-bar"><div class="confidence-fill" style="width: {bar_width}%;"></div></div>
-                                    </div>
+                            # Build symptoms HTML (escaped)
+                            symptoms_html = ""
+
+                            if symptoms:
+                                symptoms_items = "".join(
+                                    f"<li>{esc(s)}</li>" for s in symptoms
+                                )
+                                symptoms_html = textwrap.dedent(f"""\
+                                    <h3>{esc(texts["symptoms"])}</h3>
+                                    <ul>{symptoms_items}</ul>
                                 """)
 
-                            confidence_html = textwrap.dedent(f"""\
-                                <h3>{texts["confidence_breakdown"]}</h3>
-                            """) + confidence_rows
+                            # Build advisory HTML (escaped)
+                            advisory_html = ""
 
-                        # Display complete result box
-                        result_box_html = textwrap.dedent(f"""\
-                            <div class="result-info-box">
-                            <h2>{texts["classification_result"]}</h2>
-                            <div class="detected-result">
-                            <h3>{display_name}</h3>
-                            <p><strong>{texts["confidence"]}:</strong> {confidence}%</p>
-                            </div>
-                            {symptoms_html}
-                            {advisory_html}
-                            {confidence_html}
-                            </div>
-                        """)
+                            if advisory:
+                                advisory_items = "".join(
+                                    f"<li>{esc(a)}</li>" for a in advisory
+                                )
+                                advisory_html = textwrap.dedent(f"""\
+                                    <h3>{esc(texts["advisory"])}</h3>
+                                    <ul>{advisory_items}</ul>
+                                """)
 
-                        st.markdown(result_box_html, unsafe_allow_html=True)
+                            # Build confidence HTML (escaped, normalized to %)
+                            confidence_html = ""
+
+                            if all_preds:
+                                confidence_rows = ""
+
+                                for cls_key, prob in all_preds.items():
+                                    class_name = CLASS_DISPLAY_NAMES.get(
+                                        cls_key,
+                                        cls_key
+                                    )
+                                    prob_pct = to_percent(prob)
+
+                                    confidence_rows += textwrap.dedent(f"""\
+                                        <div class="confidence-row">
+                                        <div class="confidence-label"><span>{esc(class_name)}</span><span>{prob_pct:.1f}%</span></div>
+                                        <div class="confidence-bar"><div class="confidence-fill" style="width: {prob_pct:.1f}%;"></div></div>
+                                        </div>
+                                    """)
+
+                                confidence_html = textwrap.dedent(f"""\
+                                    <h3>{esc(texts["confidence_breakdown"])}</h3>
+                                """) + confidence_rows
+
+                            # Display complete result box
+                            result_box_html = textwrap.dedent(f"""\
+                                <div class="result-info-box">
+                                <h2>{esc(texts["classification_result"])}</h2>
+                                <div class="detected-result">
+                                <h3>{esc(display_name)}</h3>
+                                <p><strong>{esc(texts["confidence"])}:</strong> {confidence:.1f}%</p>
+                                </div>
+                                {symptoms_html}
+                                {advisory_html}
+                                {confidence_html}
+                                </div>
+                            """)
+
+                            st.markdown(result_box_html, unsafe_allow_html=True)
 
                     else:
+                        # FIX: raw response.text could be a huge HTML
+                        # error page (e.g. a 502 from a proxy) dumped
+                        # straight into the UI. Truncate for safety.
+                        error_detail = response.text[:500]
                         st.error(
                             f"Error from API "
                             f"({response.status_code}): "
-                            f"{response.text}"
+                            f"{error_detail}"
                         )
 
                 except requests.exceptions.ConnectionError:
