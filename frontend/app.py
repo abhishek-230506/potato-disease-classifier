@@ -100,8 +100,8 @@ st.title("🥔 Potato Leaf Disease Classifier")
 st.markdown(
     """
     <div class="desc-box">
-    Upload a picture of a potato leaf to detect whether it is **Healthy**, 
-    or affected by **Early Blight** or **Late Blight**.
+    Upload a picture of a potato leaf to detect whether it is Healthy, 
+    or affected by Early Blight or Late Blight.
     </div>
     """,
     unsafe_allow_html=True
