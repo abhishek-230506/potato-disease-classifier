@@ -15,7 +15,7 @@ with open(BG_IMAGE_PATH, "rb") as f:
 bg_base64 = base64.b64encode(bg_bytes).decode()
 bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
 
-# Custom CSS for full-page background and text colors
+# Custom CSS for full-page background
 st.markdown(
     f"""
     <style>
@@ -26,84 +26,31 @@ st.markdown(
         background-attachment: fixed;
         background-repeat: no-repeat;
         min-height: 100vh;
-        color: #ffffff;
+        color: #1b1b1b;
     }}
-
-    .stApp h1 {{
-        color: #0b2f1a !important;
+    /* Slight overlay to improve text readability */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
+        color: #0f2b1d;
     }}
-
-    .desc-box {{
-        background: rgba(255, 255, 255, 0.75);
-        color: #0b2f1a;
-        padding: 10px 14px;
-        border-radius: 10px;
-        display: inline-block;
-        max-width: 100%;
-        margin-bottom: 10px;
+    .stApp p, .stApp label, .stApp .stMarkdown, .stApp .stTooltipIcon, .stApp .st-ae, .stApp .st-af {{
+        color: #111111;
     }}
-
-    .stApp label {{
-        color: #0b2f1a !important;
-    }}
-
-    .stApp p,
-    .stApp .stMarkdown,
-    .stApp .stTooltipIcon,
-    .stApp .st-ae,
-    .stApp .st-af,
-    .stApp .stButton,
-    .stApp .stSelectbox,
-    .stApp .stNumberInput,
-    .stApp .stTextInput,
-    .stApp .stFileUploader {{
-        color: #ffffff !important;
-    }}
-
     .stApp a {{
-        color: #ffffff !important;
+        color: #006633;
     }}
-
+    /* Slight dark overlay so text is readable */
     .stApp::before {{
         content: "";
         position: fixed;
         inset: 0;
+        background: rgba(0, 0, 0, 0.35);
         background: rgba(0, 0, 0, 0.25);
         z-index: -1;
     }}
-
+    /* Make main cards a bit transparent */
+    /* Cards slightly transparent white */
     .stCard, .st-ae, .st-af {{
-        background-color: rgba(0, 0, 0, 0.55) !important;
-    }}
-
-    /* Hide header / toolbar */
-    header {{
-        display: none !important;
-    }}
-    .stApp [data-testid="stToolbar"],
-    .stApp [data-testid="stTopBar"] {{
-        display: none !important;
-    }}
-
-    /* Hide footer and any text like 'Created by ...' */
-    footer,
-    .stApp footer,
-    [data-testid="stFooter"],
-    .stApp [data-testid="stFooter"],
-    .stApp .stFooter,
-    .stApp div[class*="stFooter"],
-    .stApp div[class*="deployedFooter"],
-    .stApp div[class*="st-emotion-cache"] footer {{
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        height: 0 !important;
-        overflow: hidden !important;
-    }}
-
-    /* Also hide small footer text anywhere */
-    .stApp div[class*="stAppView"] > div > div > div > div > footer {{
-        display: none !important;
+        background-color: rgba(255, 255, 255, 0.85) !important;
     }}
     </style>
     """,
