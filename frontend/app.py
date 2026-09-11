@@ -1,5 +1,6 @@
 import os
 import base64
+import textwrap
 import streamlit as st
 import requests
 from PIL import Image
@@ -300,6 +301,24 @@ st.markdown(
     .stApp [data-testid="stFooter"] {{
         display: none !important;
     }}
+
+    /* Sidebar text: force white only in dark mode, only inside the sidebar */
+    @media (prefers-color-scheme: dark) {{
+        [data-testid="stSidebar"],
+        [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] label,
+        [data-testid="stSidebar"] span,
+        [data-testid="stSidebar"] li,
+        [data-testid="stSidebar"] .stMarkdown,
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3,
+        [data-testid="stSidebar"] h4,
+        [data-testid="stSidebar"] h5,
+        [data-testid="stSidebar"] h6 {{
+            color: #ffffff !important;
+        }}
+    }}
     </style>
     """,
     unsafe_allow_html=True
@@ -390,33 +409,25 @@ if uploaded_file is not None:
                         symptoms_html = ""
 
                         if symptoms:
-                            symptoms_html = f"""
-                            <h3>{texts["symptoms"]}</h3>
-                            <ul>
-                                {
-                                    "".join(
-                                        f"<li>{s}</li>"
-                                        for s in symptoms
-                                    )
-                                }
-                            </ul>
-                            """
+                            symptoms_items = "".join(
+                                f"<li>{s}</li>" for s in symptoms
+                            )
+                            symptoms_html = textwrap.dedent(f"""\
+                                <h3>{texts["symptoms"]}</h3>
+                                <ul>{symptoms_items}</ul>
+                            """)
 
                         # Build advisory HTML
                         advisory_html = ""
 
                         if advisory:
-                            advisory_html = f"""
-                            <h3>{texts["advisory"]}</h3>
-                            <ul>
-                                {
-                                    "".join(
-                                        f"<li>{a}</li>"
-                                        for a in advisory
-                                    )
-                                }
-                            </ul>
-                            """
+                            advisory_items = "".join(
+                                f"<li>{a}</li>" for a in advisory
+                            )
+                            advisory_html = textwrap.dedent(f"""\
+                                <h3>{texts["advisory"]}</h3>
+                                <ul>{advisory_items}</ul>
+                            """)
 
                         # Build confidence HTML
                         confidence_html = ""
@@ -435,47 +446,33 @@ if uploaded_file is not None:
                                 except (TypeError, ValueError):
                                     prob_val = 0.0
 
-                                confidence_rows += f"""
-                                <div class="confidence-row">
-                                    <div class="confidence-label">
-                                        <span>{class_name}</span>
-                                        <span>{prob}%</span>
+                                bar_width = min(max(prob_val, 0), 100)
+                                confidence_rows += textwrap.dedent(f"""\
+                                    <div class="confidence-row">
+                                    <div class="confidence-label"><span>{class_name}</span><span>{prob}%</span></div>
+                                    <div class="confidence-bar"><div class="confidence-fill" style="width: {bar_width}%;"></div></div>
                                     </div>
-                                    <div class="confidence-bar">
-                                        <div
-                                            class="confidence-fill"
-                                            style="width: {min(max(prob_val, 0), 100)}%;"
-                                        ></div>
-                                    </div>
-                                </div>
-                                """
+                                """)
 
-                            confidence_html = f"""
-                            <h3>{texts["confidence_breakdown"]}</h3>
-                            {confidence_rows}
-                            """
+                            confidence_html = textwrap.dedent(f"""\
+                                <h3>{texts["confidence_breakdown"]}</h3>
+                            """) + confidence_rows
 
                         # Display complete result box
-                        st.markdown(
-                            f"""
+                        result_box_html = textwrap.dedent(f"""\
                             <div class="result-info-box">
-                                <h2>{texts["classification_result"]}</h2>
-
-                                <div class="detected-result">
-                                    <h3>{display_name}</h3>
-                                    <p>
-                                        <strong>{texts["confidence"]}:</strong>
-                                        {confidence}%
-                                    </p>
-                                </div>
-
-                                {symptoms_html}
-                                {advisory_html}
-                                {confidence_html}
+                            <h2>{texts["classification_result"]}</h2>
+                            <div class="detected-result">
+                            <h3>{display_name}</h3>
+                            <p><strong>{texts["confidence"]}:</strong> {confidence}%</p>
                             </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
+                            {symptoms_html}
+                            {advisory_html}
+                            {confidence_html}
+                            </div>
+                        """)
+
+                        st.markdown(result_box_html, unsafe_allow_html=True)
 
                     else:
                         st.error(
