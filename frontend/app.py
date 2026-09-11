@@ -37,9 +37,14 @@ st.markdown(
         z-index: -1;
     }}
 
-    /* Main title only */
-    .stApp h1 {{
+    /* Centered main title */
+    .main-title {{
         color: #0f2b1d !important;
+        text-align: center !important;
+        width: 100%;
+        margin: 0 0 16px 0;
+        font-size: 2.2rem;
+        font-weight: 700;
     }}
 
     /* Description box */
@@ -104,8 +109,7 @@ st.markdown(
         color: #ffffff !important;
     }}
 
-    /* Hide footer only.
-       Do not hide header, toolbar, or top bar. */
+    /* Hide footer only */
     footer,
     .stApp footer,
     .stApp [data-testid="stFooter"] {{
@@ -131,7 +135,12 @@ st.set_page_config(
 )
 
 # App Title & Description
-st.title(" Potato Leaf Disease Classifier")
+st.markdown(
+    """
+    <h1 class="main-title">Potato Leaf Disease Classifier</h1>
+    """,
+    unsafe_allow_html=True
+)
 
 st.markdown(
     """
