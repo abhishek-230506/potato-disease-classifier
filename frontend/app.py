@@ -76,19 +76,33 @@ st.markdown(
         background-color: rgba(0, 0, 0, 0.55) !important;
     }}
 
-    /* Hide top bar and GitHub button */
+    /* Hide header / toolbar */
     header {{
         display: none !important;
     }}
-    .stApp [data-testid="stToolbar"] {{
-        display: none !important;
-    }}
+    .stApp [data-testid="stToolbar"],
     .stApp [data-testid="stTopBar"] {{
         display: none !important;
     }}
 
-    /* Hide footer */
-    .stApp [data-testid="stFooter"] {{
+    /* Hide footer and any text like 'Created by ...' */
+    footer,
+    .stApp footer,
+    [data-testid="stFooter"],
+    .stApp [data-testid="stFooter"],
+    .stApp .stFooter,
+    .stApp div[class*="stFooter"],
+    .stApp div[class*="deployedFooter"],
+    .stApp div[class*="st-emotion-cache"] footer {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }}
+
+    /* Also hide small footer text anywhere */
+    .stApp div[class*="stAppView"] > div > div > div > div > footer {{
         display: none !important;
     }}
     </style>
