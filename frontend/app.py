@@ -75,6 +75,10 @@ st.markdown(
     .stCard, .st-ae, .st-af {{
         background-color: rgba(0, 0, 0, 0.55) !important;
     }}
+
+    /* Hide top-right menu / GitHub button */
+    header {visibility: hidden;}
+    .stApp [data-testid="stToolbar"] {visibility: hidden;}
     </style>
     """,
     unsafe_allow_html=True
