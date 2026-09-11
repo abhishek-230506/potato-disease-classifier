@@ -59,12 +59,7 @@ t = translations[language]
 
 # App Title & Description
 st.title(t["title"])
-st.markdown(
-    """
-    Upload a picture of a potato leaf to detect whether it is **Healthy**, 
-    or affected by **Early Blight** or **Late Blight**.
-    """
-)
+st.write(t["description"])
 
 
 # Friendly label mapping for display
@@ -77,7 +72,11 @@ CLASS_DISPLAY_NAMES = {
 
 # Sidebar Info
 with st.sidebar:
-    st.header("About the Model")
+    st.header(
+        "About the Model"
+        if language == "English"
+        else "मॉडल के बारे में"
+    )
     st.markdown(
         """
         - **Model Type**: Deep CNN (TensorFlow SavedModel)
@@ -113,72 +112,82 @@ if uploaded_file is not None:
         image = Image.open(uploaded_file)
         st.image(image, caption=t["uploaded"], use_container_width=True)
 
-
         # Trigger prediction
         if st.button(t["classify"], type="primary"):
-            with st.spinner("Analyzing image..."):
+            with st.spinner(
+                "Analyzing image..."
+                if language == "English"
+                else "छवि का विश्लेषण हो रहा है..."
+            ):
                 try:
                     # Prepare file payload
                     file_bytes = uploaded_file.getvalue()
                     mime_type = uploaded_file.type or "image/jpeg"
                     files = {"file": (uploaded_file.name, file_bytes, mime_type)}
 
-
                     response = requests.post(PREDICT_URL, files=files, timeout=15)
-
 
                     if response.status_code == 200:
                         data = response.json()
+
                         pred_class = data.get("class", "Unknown")
                         confidence = data.get("confidence", 0.0)
-                        name = data.get("name", CLASS_DISPLAY_NAMES.get(pred_class, pred_class))
+                        name = data.get(
+                            "name",
+                            CLASS_DISPLAY_NAMES.get(pred_class, pred_class)
+                        )
                         symptoms = data.get("symptoms", [])
                         advisory = data.get("advisory", [])
                         all_preds = data.get("all_predictions", {})
 
-
-                        display_name = name if name else CLASS_DISPLAY_NAMES.get(pred_class, pred_class)
-
+                        display_name = (
+                            name
+                            if name
+                            else CLASS_DISPLAY_NAMES.get(pred_class, pred_class)
+                        )
 
                         st.subheader(t["result"])
-                        if pred_class == "Potato___healthy":
-                            st.success(f"### Result: **{display_name}** ({confidence}%)")
-                        else:
-                            st.warning(f"### Result: **{display_name}** ({confidence}%)")
 
+                        result_text = (
+                            "Result"
+                            if language == "English"
+                            else "परिणाम"
+                        )
+
+                        if pred_class == "Potato___healthy":
+                            st.success(
+                                f"### {result_text}: **{display_name}** ({confidence}%)"
+                            )
+                        else:
+                            st.warning(
+                                f"### {result_text}: **{display_name}** ({confidence}%)"
+                            )
 
                         if symptoms:
                             st.markdown(f"#### {t['symptoms']}")
                             for s in symptoms:
                                 st.write(f"- {s}")
 
-
                         if advisory:
                             st.markdown(f"#### {t['advisory']}")
                             for a in advisory:
                                 st.write(f"- {a}")
 
-
                         st.markdown(f"#### {t['confidence']}")
+
                         for cls_key, prob in all_preds.items():
                             c_name = CLASS_DISPLAY_NAMES.get(cls_key, cls_key)
                             st.write(f"**{c_name}**: {prob}%")
-                            st.progress(min(max(prob / 100.0, 0.0), 1.0))
-
-
+                            st.progress(
+                                min(max(prob / 100.0, 0.0), 1.0)
+                            )
                     else:
-                        st.error(f"Error from API ({response.status_code}): {response.text}")
+                        st.error(
+                            f"Error from API ({response.status_code}): {response.text}"
+                        )
 
-
-                except requests.exceptions.ConnectionError:
-                    st.error(
-                        "Unable to connect to the FastAPI backend. "
-                        f"Please verify that the backend is running at `{BACKEND_URL}`."
-                    )
-                except Exception as ex:
-                    st.error(f"An unexpected error occurred: {ex}")
-
-
+                except Exception as e:
+                    st.error(f"Invalid image file: {e}")
     except Exception as e:
         st.error(f"Invalid image file: {e}")
 else:
