@@ -15,7 +15,7 @@ with open(BG_IMAGE_PATH, "rb") as f:
 bg_base64 = base64.b64encode(bg_bytes).decode()
 bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
 
-# Custom CSS for full-page background
+
 # Custom CSS for full-page background
 st.markdown(
     f"""
@@ -37,30 +37,12 @@ st.markdown(
         z-index: -1;
     }}
 
-    /* Keep the Streamlit sidebar open/close arrow visible */
-    header {{
-        display: block !important;
-        visibility: visible !important;
-    }}
-
-    /* Hide only the toolbar/GitHub area */
-    .stApp [data-testid="stToolbar"] {{
-        display: none !important;
-    }}
-
-    /* Keep the sidebar collapse/expand control visible */
-    .stApp [data-testid="collapsedControl"] {{
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }}
-
-    /* Dark main title */
+    /* Main title only */
     .stApp h1 {{
         color: #0f2b1d !important;
     }}
 
-    /* Semi-transparent description box */
+    /* Description box */
     .desc-box {{
         display: inline-block;
         max-width: 100%;
@@ -77,7 +59,7 @@ st.markdown(
         color: #0f2b1d !important;
     }}
 
-    /* White text everywhere else */
+    /* White text for the rest of the app */
     .stApp p,
     .stApp label,
     .stApp .stMarkdown,
@@ -122,7 +104,8 @@ st.markdown(
         color: #ffffff !important;
     }}
 
-    /* Hide footer only */
+    /* Hide footer only.
+       Do not hide header, toolbar, or top bar. */
     footer,
     .stApp footer,
     .stApp [data-testid="stFooter"] {{
@@ -142,12 +125,13 @@ PREDICT_URL = f"{BACKEND_URL}/predict"
 # Set page configuration
 st.set_page_config(
     page_title="Potato Disease Classification",
-    page_icon="Ctrl Freaks",
-    layout="centered"
+    page_icon=None,
+    layout="centered",
+    initial_sidebar_state="expanded"
 )
 
 # App Title & Description
-st.title("Potato Leaf Disease Classifier")
+st.title(" Potato Leaf Disease Classifier")
 
 st.markdown(
     """
