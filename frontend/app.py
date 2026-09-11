@@ -76,7 +76,7 @@ st.markdown(
         background-color: rgba(0, 0, 0, 0.55) !important;
     }}
 
-    /* Hide top bar and GitHub button completely */
+    /* Hide top bar and GitHub button */
     header {{
         display: none !important;
     }}
@@ -84,6 +84,11 @@ st.markdown(
         display: none !important;
     }}
     .stApp [data-testid="stTopBar"] {{
+        display: none !important;
+    }}
+
+    /* Hide footer */
+    .stApp [data-testid="stFooter"] {{
         display: none !important;
     }}
     </style>
