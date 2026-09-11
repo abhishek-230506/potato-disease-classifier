@@ -17,9 +17,11 @@ bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
 
 
 # Custom CSS for full-page background
+# Custom CSS for full-page background
 st.markdown(
     f"""
     <style>
+    /* Full-page background */
     .stApp {{
         background-image: {bg_data_url};
         background-size: cover;
@@ -29,6 +31,7 @@ st.markdown(
         min-height: 100vh;
     }}
 
+    /* Dark overlay */
     .stApp::before {{
         content: "";
         position: fixed;
@@ -37,7 +40,7 @@ st.markdown(
         z-index: -1;
     }}
 
-    /* Centered main title */
+    /* Centered title */
     .main-title {{
         color: #0f2b1d !important;
         text-align: center !important;
@@ -49,67 +52,153 @@ st.markdown(
 
     /* Description box */
     .desc-box {{
-        display: inline-block;
-        max-width: 100%;
-        padding: 10px 14px;
-        margin-bottom: 12px;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 16px;
+        margin-bottom: 14px;
         border-radius: 10px;
-        background: rgba(255, 255, 255, 0.75);
-        color: #0f2b1d !important;
+        background: rgba(255, 255, 255, 0.78);
+        color: #111111 !important;
         font-size: 16px;
         line-height: 1.5;
     }}
 
-    .desc-box p {{
-        color: #0f2b1d !important;
+    .desc-box p,
+    .desc-box strong {{
+        color: #111111 !important;
     }}
 
-    /* White text for the rest of the app */
+    /* Default text */
+    .stApp,
     .stApp p,
     .stApp label,
-    .stApp .stMarkdown,
+    .stApp .stMarkdown {{
+        color: #111111 !important;
+    }}
+
+    /* File uploader container */
+    .stApp [data-testid="stFileUploader"] {{
+        background: rgba(255, 255, 255, 0.78) !important;
+        padding: 12px;
+        border-radius: 12px;
+        color: #111111 !important;
+    }}
+
     .stApp [data-testid="stFileUploader"] label,
     .stApp [data-testid="stFileUploader"] span,
     .stApp [data-testid="stFileUploader"] small,
     .stApp [data-testid="stFileUploaderDropzoneInstructions"] {{
-        color: #ffffff !important;
-    }}
-
-    /* Keep description text dark */
-    .stApp .desc-box,
-    .stApp .desc-box p {{
-        color: #0f2b1d !important;
-    }}
-
-    /* File uploader */
-    .stApp [data-testid="stFileUploader"] {{
-        color: #ffffff !important;
-        background: rgba(0, 0, 0, 0.35);
-        padding: 12px;
-        border-radius: 12px;
+        color: #111111 !important;
     }}
 
     .stApp [data-testid="stFileUploaderDropzone"] {{
-        background: rgba(255, 255, 255, 0.18) !important;
-        border: 1px solid rgba(255, 255, 255, 0.65) !important;
+        background: rgba(255, 255, 255, 0.65) !important;
+        border: 1px solid rgba(0, 0, 0, 0.35) !important;
     }}
 
     .stApp [data-testid="stFileUploader"] button {{
-        color: #ffffff !important;
-        background: rgba(0, 0, 0, 0.55) !important;
-        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        color: #111111 !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid #555555 !important;
     }}
 
-    /* Result headings */
+    /* Main result box */
+    .result-info-box {{
+        width: 100%;
+        box-sizing: border-box;
+        padding: 18px;
+        margin-top: 16px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.84);
+        color: #111111 !important;
+        border: 1px solid rgba(0, 0, 0, 0.22);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    }}
+
+    .result-info-box h2,
+    .result-info-box h3,
+    .result-info-box h4,
+    .result-info-box p,
+    .result-info-box li,
+    .result-info-box strong {{
+        color: #111111 !important;
+    }}
+
+    .result-info-box h2 {{
+        margin-top: 0;
+        margin-bottom: 14px;
+    }}
+
+    .result-info-box h3 {{
+        margin-top: 18px;
+        margin-bottom: 8px;
+    }}
+
+    .result-info-box ul {{
+        margin-top: 4px;
+        padding-left: 24px;
+    }}
+
+    .result-info-box li {{
+        margin-bottom: 6px;
+    }}
+
+    /* Detected result */
+    .detected-result {{
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.65);
+        border-left: 5px solid #2e7d32;
+    }}
+
+    .detected-result h3 {{
+        margin-top: 0;
+        margin-bottom: 6px;
+    }}
+
+    /* Confidence rows */
+    .confidence-row {{
+        margin-top: 10px;
+    }}
+
+    .confidence-label {{
+        display: flex;
+        justify-content: space-between;
+        color: #111111 !important;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }}
+
+    .confidence-bar {{
+        width: 100%;
+        height: 8px;
+        background: rgba(0, 0, 0, 0.18);
+        border-radius: 5px;
+        overflow: hidden;
+    }}
+
+    .confidence-fill {{
+        height: 100%;
+        background: #2e7d32;
+        border-radius: 5px;
+    }}
+
+    /* Streamlit headings */
     .stApp h2,
     .stApp h3,
     .stApp h4,
     .stApp h5,
     .stApp h6 {{
-        color: #ffffff !important;
+        color: #111111 !important;
     }}
 
-    /* Hide footer only */
+    /* Buttons */
+    .stApp button {{
+        color: #111111 !important;
+    }}
+
+    /* Hide only footer; keep header and sidebar controls */
     footer,
     .stApp footer,
     .stApp [data-testid="stFooter"] {{
@@ -137,16 +226,17 @@ st.set_page_config(
 # App Title & Description
 st.markdown(
     """
-    <h1 class="main-title">Potato Leaf Disease Classifier</h1>
+    <h1 class="main-title">
+        Potato Leaf Disease Classifier
+    </h1>
     """,
     unsafe_allow_html=True
 )
 
 st.markdown(
-    """
+    f"""
     <div class="desc-box">
-    Upload a picture of a potato leaf to detect whether it is Healthy, 
-    or affected by Early Blight or Late Blight.
+        {texts["description"]}
     </div>
     """,
     unsafe_allow_html=True
@@ -159,9 +249,57 @@ CLASS_DISPLAY_NAMES = {
     "Potato___healthy": "Healthy"
 }
 
+TRANSLATIONS = {
+    "English": {
+        "language": "Language",
+        "about_model": "About the Model",
+        "description": (
+            "Upload a picture of a potato leaf to detect whether it is "
+            "Healthy, or affected by Early Blight or Late Blight."
+        ),
+        "choose_image": "Choose a potato leaf image...",
+        "uploaded_image": "Uploaded Potato Leaf",
+        "classify": "Classify Leaf",
+        "analyzing": "Analyzing image...",
+        "classification_result": "Classification Result",
+        "symptoms": "Symptoms",
+        "advisory": "Advisory",
+        "confidence": "Confidence",
+        "confidence_breakdown": "Confidence Breakdown",
+        "upload_message": "Please upload an image of a potato leaf to begin."
+    },
+    "हिंदी": {
+        "language": "भाषा",
+        "about_model": "मॉडल के बारे में",
+        "description": (
+            "आलू के पत्ते की तस्वीर अपलोड करके जांचें कि पत्ता स्वस्थ है "
+            "या अर्ली ब्लाइट या लेट ब्लाइट से प्रभावित है।"
+        ),
+        "choose_image": "आलू के पत्ते की तस्वीर चुनें...",
+        "uploaded_image": "अपलोड किया गया आलू का पत्ता",
+        "classify": "पत्ती की जांच करें",
+        "analyzing": "तस्वीर का विश्लेषण हो रहा है...",
+        "classification_result": "जांच का परिणाम",
+        "symptoms": "लक्षण",
+        "advisory": "सलाह",
+        "confidence": "विश्वास",
+        "confidence_breakdown": "विश्वास प्रतिशत",
+        "upload_message": "शुरू करने के लिए आलू के पत्ते की तस्वीर अपलोड करें।"
+    }
+}
+
 # Sidebar Info
 with st.sidebar:
-    st.header("About the Model")
+    selected_language = st.selectbox(
+        "Language / भाषा",
+        options=["English", "हिंदी"],
+        index=0,
+        key="language_selector"
+    )
+
+    texts = TRANSLATIONS[selected_language]
+
+    st.header(texts["about_model"])
     st.markdown(
         """
         - **Model Type**: Deep CNN (TensorFlow SavedModel)
@@ -186,71 +324,175 @@ with st.sidebar:
 
 # File Uploader
 uploaded_file = st.file_uploader(
-    "Choose a potato leaf image...",
+    texts["choose_image"],
     type=["jpg", "jpeg", "png"]
 )
 
 if uploaded_file is not None:
     try:
         image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded Potato Leaf", use_container_width=True)
 
-        # Trigger prediction
-        if st.button("Classify Leaf", type="primary"):
-            with st.spinner("Analyzing image..."):
+        st.image(
+            image,
+            caption=texts["uploaded_image"],
+            use_container_width=True
+        )
+
+        if st.button(texts["classify"], type="primary"):
+            with st.spinner(texts["analyzing"]):
                 try:
-                    # Prepare file payload
                     file_bytes = uploaded_file.getvalue()
                     mime_type = uploaded_file.type or "image/jpeg"
-                    files = {"file": (uploaded_file.name, file_bytes, mime_type)}
+                    files = {
+                        "file": (
+                            uploaded_file.name,
+                            file_bytes,
+                            mime_type
+                        )
+                    }
 
-                    response = requests.post(PREDICT_URL, files=files, timeout=15)
+                    response = requests.post(
+                        PREDICT_URL,
+                        files=files,
+                        timeout=15
+                    )
 
                     if response.status_code == 200:
                         data = response.json()
+
                         pred_class = data.get("class", "Unknown")
                         confidence = data.get("confidence", 0.0)
-                        name = data.get("name", CLASS_DISPLAY_NAMES.get(pred_class, pred_class))
+                        name = data.get(
+                            "name",
+                            CLASS_DISPLAY_NAMES.get(
+                                pred_class,
+                                pred_class
+                            )
+                        )
                         symptoms = data.get("symptoms", [])
                         advisory = data.get("advisory", [])
                         all_preds = data.get("all_predictions", {})
 
-                        display_name = name if name else CLASS_DISPLAY_NAMES.get(pred_class, pred_class)
+                        display_name = (
+                            name
+                            if name
+                            else CLASS_DISPLAY_NAMES.get(
+                                pred_class,
+                                pred_class
+                            )
+                        )
 
-                        st.subheader("Classification Result")
-                        if pred_class == "Potato___healthy":
-                            st.success(f"### Result: **{display_name}** ({confidence}%)")
-                        else:
-                            st.warning(f"### Result: **{display_name}** ({confidence}%)")
+                        # Build symptoms HTML
+                        symptoms_html = ""
 
                         if symptoms:
-                            st.markdown("#### Symptoms")
-                            for s in symptoms:
-                                st.write(f"- {s}")
+                            symptoms_html = f"""
+                            <h3>{texts["symptoms"]}</h3>
+                            <ul>
+                                {
+                                    "".join(
+                                        f"<li>{s}</li>"
+                                        for s in symptoms
+                                    )
+                                }
+                            </ul>
+                            """
+
+                        # Build advisory HTML
+                        advisory_html = ""
 
                         if advisory:
-                            st.markdown("#### Advisory")
-                            for a in advisory:
-                                st.write(f"- {a}")
+                            advisory_html = f"""
+                            <h3>{texts["advisory"]}</h3>
+                            <ul>
+                                {
+                                    "".join(
+                                        f"<li>{a}</li>"
+                                        for a in advisory
+                                    )
+                                }
+                            </ul>
+                            """
 
-                        st.markdown("#### Confidence Breakdown")
-                        for cls_key, prob in all_preds.items():
-                            c_name = CLASS_DISPLAY_NAMES.get(cls_key, cls_key)
-                            st.write(f"**{c_name}**: {prob}%")
-                            st.progress(min(max(prob / 100.0, 0.0), 1.0))
+                        # Build confidence HTML
+                        confidence_html = ""
+
+                        if all_preds:
+                            confidence_rows = ""
+
+                            for cls_key, prob in all_preds.items():
+                                class_name = CLASS_DISPLAY_NAMES.get(
+                                    cls_key,
+                                    cls_key
+                                )
+
+                                confidence_rows += f"""
+                                <div class="confidence-row">
+                                    <div class="confidence-label">
+                                        <span>{class_name}</span>
+                                        <span>{prob}%</span>
+                                    </div>
+                                    <div class="confidence-bar">
+                                        <div
+                                            class="confidence-fill"
+                                            style="width: {min(max(float(prob), 0), 100)}%;"
+                                        ></div>
+                                    </div>
+                                </div>
+                                """
+
+                            confidence_html = f"""
+                            <h3>{texts["confidence_breakdown"]}</h3>
+                            {confidence_rows}
+                            """
+
+                        # Display complete result box
+                        st.markdown(
+                            f"""
+                            <div class="result-info-box">
+                                <h2>{texts["classification_result"]}</h2>
+
+                                <div class="detected-result">
+                                    <h3>{display_name}</h3>
+                                    <p>
+                                        <strong>{texts["confidence"]}:</strong>
+                                        {confidence}%
+                                    </p>
+                                </div>
+
+                                {symptoms_html}
+                                {advisory_html}
+                                {confidence_html}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
 
                     else:
-                        st.error(f"Error from API ({response.status_code}): {response.text}")
+                        st.error(
+                            f"Error from API "
+                            f"({response.status_code}): "
+                            f"{response.text}"
+                        )
 
                 except requests.exceptions.ConnectionError:
                     st.error(
                         "Unable to connect to the FastAPI backend. "
-                        f"Please verify that the backend is running at `{BACKEND_URL}`."
+                        f"Please verify that the backend is running at "
+                        f"`{BACKEND_URL}`."
                     )
+
+                except requests.exceptions.Timeout:
+                    st.error(
+                        "The backend took too long to respond. "
+                        "Please try again."
+                    )
+
                 except Exception as ex:
                     st.error(f"An unexpected error occurred: {ex}")
 
     except Exception as e:
         st.error(f"Invalid image file: {e}")
+
 else:
-    st.info("Please upload an image of a potato leaf to begin.")
+    st.info(texts["upload_message"])
