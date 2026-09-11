@@ -20,7 +20,6 @@ bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
 st.markdown(
     f"""
     <style>
-    /* Full-page background */
     .stApp {{
         background-image: {bg_data_url};
         background-size: cover;
@@ -30,7 +29,6 @@ st.markdown(
         min-height: 100vh;
     }}
 
-    /* Dark overlay */
     .stApp::before {{
         content: "";
         position: fixed;
@@ -39,12 +37,30 @@ st.markdown(
         z-index: -1;
     }}
 
-    /* Only the main title is dark */
+    /* Keep the Streamlit sidebar open/close arrow visible */
+    header {{
+        display: block !important;
+        visibility: visible !important;
+    }}
+
+    /* Hide only the toolbar/GitHub area */
+    .stApp [data-testid="stToolbar"] {{
+        display: none !important;
+    }}
+
+    /* Keep the sidebar collapse/expand control visible */
+    .stApp [data-testid="collapsedControl"] {{
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }}
+
+    /* Dark main title */
     .stApp h1 {{
         color: #0f2b1d !important;
     }}
 
-    /* Description box */
+    /* Semi-transparent description box */
     .desc-box {{
         display: inline-block;
         max-width: 100%;
@@ -57,32 +73,28 @@ st.markdown(
         line-height: 1.5;
     }}
 
-    .desc-box strong,
-    .desc-box b {{
+    .desc-box p {{
         color: #0f2b1d !important;
     }}
 
-    /* All normal app text is white */
+    /* White text everywhere else */
     .stApp p,
     .stApp label,
     .stApp .stMarkdown,
-    .stApp .stMarkdown p,
     .stApp [data-testid="stFileUploader"] label,
     .stApp [data-testid="stFileUploader"] span,
     .stApp [data-testid="stFileUploader"] small,
-    .stApp [data-testid="stFileUploaderDropzoneInstructions"],
-    .stApp [data-testid="stFileUploaderDropzoneInstructions"] span,
-    .stApp [data-testid="stFileUploaderDropzoneInstructions"] small {{
+    .stApp [data-testid="stFileUploaderDropzoneInstructions"] {{
         color: #ffffff !important;
     }}
 
-    /* Keep the description text dark despite the general white rule */
+    /* Keep description text dark */
     .stApp .desc-box,
     .stApp .desc-box p {{
         color: #0f2b1d !important;
     }}
 
-    /* File uploader white text and translucent box */
+    /* File uploader */
     .stApp [data-testid="stFileUploader"] {{
         color: #ffffff !important;
         background: rgba(0, 0, 0, 0.35);
@@ -95,20 +107,13 @@ st.markdown(
         border: 1px solid rgba(255, 255, 255, 0.65) !important;
     }}
 
-    /* Browse button */
     .stApp [data-testid="stFileUploader"] button {{
         color: #ffffff !important;
         background: rgba(0, 0, 0, 0.55) !important;
         border: 1px solid rgba(255, 255, 255, 0.8) !important;
     }}
 
-    /* Buttons and links */
-    .stApp button,
-    .stApp a {{
-        color: #ffffff !important;
-    }}
-
-    /* Result headings stay white */
+    /* Result headings */
     .stApp h2,
     .stApp h3,
     .stApp h4,
@@ -117,18 +122,9 @@ st.markdown(
         color: #ffffff !important;
     }}
 
-    /* Translucent result containers */
-    .stApp [data-testid="stAlert"],
-    .stApp [data-testid="stStatusWidget"],
-    .stApp [data-testid="stExpander"] {{
-        background: rgba(0, 0, 0, 0.45) !important;
-    }}
-
-    /* Hide Streamlit top bar and footer */
-    header,
+    /* Hide footer only */
     footer,
-    .stApp [data-testid="stToolbar"],
-    .stApp [data-testid="stTopBar"],
+    .stApp footer,
     .stApp [data-testid="stFooter"] {{
         display: none !important;
     }}
@@ -146,12 +142,12 @@ PREDICT_URL = f"{BACKEND_URL}/predict"
 # Set page configuration
 st.set_page_config(
     page_title="Potato Disease Classification",
-    page_icon="🥔",
+    page_icon="Ctrl Freaks",
     layout="centered"
 )
 
 # App Title & Description
-st.title("🥔 Potato Leaf Disease Classifier")
+st.title("Potato Leaf Disease Classifier")
 
 st.markdown(
     """
