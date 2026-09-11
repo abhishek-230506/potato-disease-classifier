@@ -26,16 +26,26 @@ st.markdown(
         background-attachment: fixed;
         background-repeat: no-repeat;
         min-height: 100vh;
+        color: #1b1b1b;
     }}
-    /* Slight overlay to improve text readability */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
+        color: #0f2b1d;
+    }}
+    .stApp p, .stApp label, .stApp .stMarkdown, .stApp .stTooltipIcon, .stApp .st-ae, .stApp .st-af {{
+        color: #111111;
+    }}
+    .stApp a {{
+        color: #006633;
+    }}
+    /* Slight dark overlay so text is readable */
     .stApp::before {{
         content: "";
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.35);
+        background: rgba(0, 0, 0, 0.25);
         z-index: -1;
     }}
-    /* Make main cards a bit transparent */
+    /* Cards slightly transparent white */
     .stCard, .st-ae, .st-af {{
         background-color: rgba(255, 255, 255, 0.85) !important;
     }}
