@@ -17,7 +17,7 @@ PREDICT_URL = f"{BACKEND_URL}/predict"
 # Set page configuration
 st.set_page_config(
     page_title="Potato Disease Classification",
-    page_icon="🥔",
+    page_icon="Ctrl Freaks",
     layout="centered"
 )
 
@@ -30,7 +30,7 @@ language = st.sidebar.selectbox(
 
 translations = {
     "English": {
-        "title": "🥔 Potato Leaf Disease Classifier",
+        "title": "Potato Leaf Disease Classifier",
         "description": "Upload a picture of a potato leaf to detect whether it is Healthy, Early Blight, or Late Blight.",
         "upload": "Choose a potato leaf image...",
         "classify": "Classify Leaf",
@@ -42,7 +42,7 @@ translations = {
         "invalid": "Invalid image file"
     },
     "हिंदी": {
-        "title": "🥔 आलू की पत्ती रोग पहचानकर्ता",
+        "title": "आलू की पत्ती रोग पहचानकर्ता",
         "description": "आलू की पत्ती की तस्वीर अपलोड करके रोग की पहचान करें।",
         "upload": "आलू की पत्ती की तस्वीर चुनें...",
         "classify": "पत्ती की जांच करें",
