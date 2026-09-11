@@ -1,10 +1,48 @@
 import os
+import base64
 import streamlit as st
 import requests
 from PIL import Image
 import io
 
+# Background image path: potato/farmer3.avif
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BG_IMAGE_PATH = os.path.join(BASE_DIR, "farmer3.avif")
 
+# Load image as data URL
+with open(BG_IMAGE_PATH, "rb") as f:
+    bg_bytes = f.read()
+bg_base64 = base64.b64encode(bg_bytes).decode()
+bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
+
+# Custom CSS for full-page background
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: {bg_data_url};
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+    }}
+    /* Slight overlay to improve text readability */
+    .stApp::before {{
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: -1;
+    }}
+    /* Make main cards a bit transparent */
+    .stCard, .st-ae, .st-af {{
+        background-color: rgba(255, 255, 255, 0.85) !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 # Read backend URL from environment variable, falling back to localhost:8000 when running locally
 raw_backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
 BACKEND_URL = raw_backend_url.strip().rstrip("/")
