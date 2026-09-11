@@ -19,12 +19,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BG_IMAGE_PATH = os.path.join(BASE_DIR, "farmer3.avif")
 
 
-# Load background image
-with open(BG_IMAGE_PATH, "rb") as f:
-    bg_bytes = f.read()
-
-bg_base64 = base64.b64encode(bg_bytes).decode()
-bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
+# Load background image (gracefully handle a missing file instead of crashing)
+bg_data_url = None
+try:
+    with open(BG_IMAGE_PATH, "rb") as f:
+        bg_bytes = f.read()
+    bg_base64 = base64.b64encode(bg_bytes).decode()
+    bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
+except (FileNotFoundError, OSError):
+    bg_data_url = None
 
 
 # Friendly label mapping
@@ -84,7 +87,7 @@ PING_URL = f"{BACKEND_URL}/ping"
 PREDICT_URL = f"{BACKEND_URL}/predict"
 
 
-# Sidebar
+# Sidebar (built once)
 with st.sidebar:
     selected_language = st.selectbox(
         "Language / भाषा",
@@ -132,9 +135,7 @@ with st.sidebar:
 
 
 # Custom CSS
-st.markdown(
-    f"""
-    <style>
+background_css = f"""
     .stApp {{
         background-image: {bg_data_url};
         background-size: cover;
@@ -151,6 +152,16 @@ st.markdown(
         background: rgba(0, 0, 0, 0.25);
         z-index: -1;
     }}
+""" if bg_data_url else """
+    .stApp {
+        min-height: 100vh;
+    }
+"""
+
+st.markdown(
+    f"""
+    <style>
+    {background_css}
 
     .main-title {{
         color: #0f2b1d !important;
@@ -314,85 +325,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Friendly label mapping for display
-CLASS_DISPLAY_NAMES = {
-    "Potato___Early_blight": "Early Blight",
-    "Potato___Late_blight": "Late Blight",
-    "Potato___healthy": "Healthy"
-}
-
-TRANSLATIONS = {
-    "English": {
-        "language": "Language",
-        "about_model": "About the Model",
-        "description": (
-            "Upload a picture of a potato leaf to detect whether it is "
-            "Healthy, or affected by Early Blight or Late Blight."
-        ),
-        "choose_image": "Choose a potato leaf image...",
-        "uploaded_image": "Uploaded Potato Leaf",
-        "classify": "Classify Leaf",
-        "analyzing": "Analyzing image...",
-        "classification_result": "Classification Result",
-        "symptoms": "Symptoms",
-        "advisory": "Advisory",
-        "confidence": "Confidence",
-        "confidence_breakdown": "Confidence Breakdown",
-        "upload_message": "Please upload an image of a potato leaf to begin."
-    },
-    "हिंदी": {
-        "language": "भाषा",
-        "about_model": "मॉडल के बारे में",
-        "description": (
-            "आलू के पत्ते की तस्वीर अपलोड करके जांचें कि पत्ता स्वस्थ है "
-            "या अर्ली ब्लाइट या लेट ब्लाइट से प्रभावित है।"
-        ),
-        "choose_image": "आलू के पत्ते की तस्वीर चुनें...",
-        "uploaded_image": "अपलोड किया गया आलू का पत्ता",
-        "classify": "पत्ती की जांच करें",
-        "analyzing": "तस्वीर का विश्लेषण हो रहा है...",
-        "classification_result": "जांच का परिणाम",
-        "symptoms": "लक्षण",
-        "advisory": "सलाह",
-        "confidence": "विश्वास",
-        "confidence_breakdown": "विश्वास प्रतिशत",
-        "upload_message": "शुरू करने के लिए आलू के पत्ते की तस्वीर अपलोड करें।"
-    }
-}
-
-# Sidebar Info
-with st.sidebar:
-    selected_language = st.selectbox(
-        "Language / भाषा",
-        options=["English", "हिंदी"],
-        index=0,
-        key="language_selector"
-    )
-
-    texts = TRANSLATIONS[selected_language]
-
-    st.header(texts["about_model"])
-    st.markdown(
-        """
-        - **Model Type**: Deep CNN (TensorFlow SavedModel)
-        - **Target Classes**:
-          - 🌿 Healthy
-          - 🍂 Early Blight
-          - 🥀 Late Blight
-        - **Backend**: FastAPI
-        - **Frontend**: Streamlit
-        """
-    )
-    st.markdown("---")
-    backend_status_placeholder = st.empty()
-    try:
-        ping_res = requests.get(PING_URL, timeout=2)
-        if ping_res.status_code == 200:
-            backend_status_placeholder.success(f"Backend: Connected ({BACKEND_URL})")
-        else:
-            backend_status_placeholder.warning("Backend: Unhealthy")
-    except Exception:
-        backend_status_placeholder.error("Backend: Not reachable")
 
 # File Uploader
 uploaded_file = st.file_uploader(
@@ -498,6 +430,11 @@ if uploaded_file is not None:
                                     cls_key
                                 )
 
+                                try:
+                                    prob_val = float(prob)
+                                except (TypeError, ValueError):
+                                    prob_val = 0.0
+
                                 confidence_rows += f"""
                                 <div class="confidence-row">
                                     <div class="confidence-label">
@@ -507,7 +444,7 @@ if uploaded_file is not None:
                                     <div class="confidence-bar">
                                         <div
                                             class="confidence-fill"
-                                            style="width: {min(max(float(prob), 0), 100)}%;"
+                                            style="width: {min(max(prob_val, 0), 100)}%;"
                                         ></div>
                                     </div>
                                 </div>
