@@ -3,25 +3,138 @@ import base64
 import streamlit as st
 import requests
 from PIL import Image
-import io
+
+
+# This must be the first Streamlit command
+st.set_page_config(
+    page_title="Potato Disease Classification",
+    page_icon=None,
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
+
 
 # Background image path: potato/farmer3.avif
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BG_IMAGE_PATH = os.path.join(BASE_DIR, "farmer3.avif")
 
-# Load image as data URL
+
+# Load background image
 with open(BG_IMAGE_PATH, "rb") as f:
     bg_bytes = f.read()
+
 bg_base64 = base64.b64encode(bg_bytes).decode()
 bg_data_url = f"url('data:image/avif;base64,{bg_base64}')"
 
 
-# Custom CSS for full-page background
-# Custom CSS for full-page background
+# Friendly label mapping
+CLASS_DISPLAY_NAMES = {
+    "Potato___Early_blight": "Early Blight",
+    "Potato___Late_blight": "Late Blight",
+    "Potato___healthy": "Healthy"
+}
+
+
+# Translations
+TRANSLATIONS = {
+    "English": {
+        "language": "Language",
+        "about_model": "About the Model",
+        "description": (
+            "Upload a picture of a potato leaf to detect whether it is "
+            "Healthy, or affected by Early Blight or Late Blight."
+        ),
+        "choose_image": "Choose a potato leaf image...",
+        "uploaded_image": "Uploaded Potato Leaf",
+        "classify": "Classify Leaf",
+        "analyzing": "Analyzing image...",
+        "classification_result": "Classification Result",
+        "symptoms": "Symptoms",
+        "advisory": "Advisory",
+        "confidence": "Confidence",
+        "confidence_breakdown": "Confidence Breakdown",
+        "upload_message": "Please upload an image of a potato leaf to begin."
+    },
+    "हिंदी": {
+        "language": "भाषा",
+        "about_model": "मॉडल के बारे में",
+        "description": (
+            "आलू के पत्ते की तस्वीर अपलोड करके जांचें कि पत्ता स्वस्थ है "
+            "या अर्ली ब्लाइट या लेट ब्लाइट से प्रभावित है।"
+        ),
+        "choose_image": "आलू के पत्ते की तस्वीर चुनें...",
+        "uploaded_image": "अपलोड किया गया आलू का पत्ता",
+        "classify": "पत्ती की जांच करें",
+        "analyzing": "तस्वीर का विश्लेषण हो रहा है...",
+        "classification_result": "जांच का परिणाम",
+        "symptoms": "लक्षण",
+        "advisory": "सलाह",
+        "confidence": "विश्वास",
+        "confidence_breakdown": "विश्वास प्रतिशत",
+        "upload_message": "शुरू करने के लिए आलू के पत्ते की तस्वीर अपलोड करें।"
+    }
+}
+
+
+# Backend URL
+raw_backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+BACKEND_URL = raw_backend_url.strip().rstrip("/")
+
+PING_URL = f"{BACKEND_URL}/ping"
+PREDICT_URL = f"{BACKEND_URL}/predict"
+
+
+# Sidebar
+with st.sidebar:
+    selected_language = st.selectbox(
+        "Language / भाषा",
+        options=["English", "हिंदी"],
+        index=0,
+        key="language_selector"
+    )
+
+    texts = TRANSLATIONS[selected_language]
+
+    st.header(texts["about_model"])
+
+    st.markdown(
+        """
+        - **Model Type**: Deep CNN (TensorFlow SavedModel)
+        - **Target Classes**:
+          - 🌿 Healthy
+          - 🍂 Early Blight
+          - 🥀 Late Blight
+        - **Backend**: FastAPI
+        - **Frontend**: Streamlit
+        """
+    )
+
+    st.markdown("---")
+
+    backend_status_placeholder = st.empty()
+
+    try:
+        ping_res = requests.get(PING_URL, timeout=2)
+
+        if ping_res.status_code == 200:
+            backend_status_placeholder.success(
+                f"Backend: Connected ({BACKEND_URL})"
+            )
+        else:
+            backend_status_placeholder.warning(
+                "Backend: Unhealthy"
+            )
+
+    except Exception:
+        backend_status_placeholder.error(
+            "Backend: Not reachable"
+        )
+
+
+# Custom CSS
 st.markdown(
     f"""
     <style>
-    /* Full-page background */
     .stApp {{
         background-image: {bg_data_url};
         background-size: cover;
@@ -31,7 +144,6 @@ st.markdown(
         min-height: 100vh;
     }}
 
-    /* Dark overlay */
     .stApp::before {{
         content: "";
         position: fixed;
@@ -40,7 +152,6 @@ st.markdown(
         z-index: -1;
     }}
 
-    /* Centered title */
     .main-title {{
         color: #0f2b1d !important;
         text-align: center !important;
@@ -50,7 +161,6 @@ st.markdown(
         font-weight: 700;
     }}
 
-    /* Description box */
     .desc-box {{
         display: block;
         width: 100%;
@@ -64,12 +174,10 @@ st.markdown(
         line-height: 1.5;
     }}
 
-    .desc-box p,
-    .desc-box strong {{
+    .desc-box p {{
         color: #111111 !important;
     }}
 
-    /* Default text */
     .stApp,
     .stApp p,
     .stApp label,
@@ -77,7 +185,6 @@ st.markdown(
         color: #111111 !important;
     }}
 
-    /* File uploader container */
     .stApp [data-testid="stFileUploader"] {{
         background: rgba(255, 255, 255, 0.78) !important;
         padding: 12px;
@@ -87,8 +194,7 @@ st.markdown(
 
     .stApp [data-testid="stFileUploader"] label,
     .stApp [data-testid="stFileUploader"] span,
-    .stApp [data-testid="stFileUploader"] small,
-    .stApp [data-testid="stFileUploaderDropzoneInstructions"] {{
+    .stApp [data-testid="stFileUploader"] small {{
         color: #111111 !important;
     }}
 
@@ -103,7 +209,6 @@ st.markdown(
         border: 1px solid #555555 !important;
     }}
 
-    /* Main result box */
     .result-info-box {{
         width: 100%;
         box-sizing: border-box;
@@ -125,16 +230,6 @@ st.markdown(
         color: #111111 !important;
     }}
 
-    .result-info-box h2 {{
-        margin-top: 0;
-        margin-bottom: 14px;
-    }}
-
-    .result-info-box h3 {{
-        margin-top: 18px;
-        margin-bottom: 8px;
-    }}
-
     .result-info-box ul {{
         margin-top: 4px;
         padding-left: 24px;
@@ -144,7 +239,6 @@ st.markdown(
         margin-bottom: 6px;
     }}
 
-    /* Detected result */
     .detected-result {{
         padding: 12px 14px;
         border-radius: 10px;
@@ -152,12 +246,6 @@ st.markdown(
         border-left: 5px solid #2e7d32;
     }}
 
-    .detected-result h3 {{
-        margin-top: 0;
-        margin-bottom: 6px;
-    }}
-
-    /* Confidence rows */
     .confidence-row {{
         margin-top: 10px;
     }}
@@ -184,7 +272,6 @@ st.markdown(
         border-radius: 5px;
     }}
 
-    /* Streamlit headings */
     .stApp h2,
     .stApp h3,
     .stApp h4,
@@ -193,12 +280,10 @@ st.markdown(
         color: #111111 !important;
     }}
 
-    /* Buttons */
     .stApp button {{
         color: #111111 !important;
     }}
 
-    /* Hide only footer; keep header and sidebar controls */
     footer,
     .stApp footer,
     .stApp [data-testid="stFooter"] {{
@@ -208,22 +293,9 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# Read backend URL from environment variable, falling back to localhost:8000 when running locally
-raw_backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
-BACKEND_URL = raw_backend_url.strip().rstrip("/")
 
-PING_URL = f"{BACKEND_URL}/ping"
-PREDICT_URL = f"{BACKEND_URL}/predict"
 
-# Set page configuration
-st.set_page_config(
-    page_title="Potato Disease Classification",
-    page_icon=None,
-    layout="centered",
-    initial_sidebar_state="expanded"
-)
-
-# App Title & Description
+# Main title and description
 st.markdown(
     """
     <h1 class="main-title">
